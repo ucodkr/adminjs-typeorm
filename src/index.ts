@@ -119,6 +119,12 @@
  *
  * in our case external ID was is a number.
  */
+import { Database } from './Database'
+import { Resource } from './Resource'
 
 export * from './Database'
 export * from './Resource'
+
+export { Database, Resource }
+
+export default { Database, Resource }
