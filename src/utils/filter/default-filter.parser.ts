@@ -11,7 +11,7 @@ export const DefaultParser: FilterParser = {
       return {
         filterKey: fieldKey,
         filterValue: Raw(
-          (alias) => `CAST(${alias} AS CHAR) = :value`,
+          (alias) => `CAST(${alias} AS CHAR(36)) = :value`,
           { value: filter.value },
         ),
       }
