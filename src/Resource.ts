@@ -1,3 +1,4 @@
+/* eslint-disable no-restricted-globals */
 /* eslint-disable no-param-reassign */
 import { BaseEntity, In } from 'typeorm'
 import { BaseResource, ValidationError, Filter, BaseRecord, flat } from 'adminjs'
@@ -17,7 +18,6 @@ export class Resource extends BaseResource {
 
   constructor(model: typeof BaseEntity) {
     super(model)
-
     this.model = model
     this.propsObject = this.prepareProps()
   }
@@ -101,14 +101,35 @@ export class Resource extends BaseResource {
     return instance
   }
 
+
   public async update(pk: string | number, params: any = {}): Promise<ParamsType> {
     const reference: any = {}
     reference[this.idName()] = pk
     const instance = await this.model.findOneBy(reference)
     if (instance) {
       const preparedParams = flat.unflatten<any, any>(this.prepareParams(params))
+
       Object.keys(preparedParams).forEach((paramName) => {
-        instance[paramName] = preparedParams[paramName]
+        const val = preparedParams[paramName]
+        if (Array.isArray(val) && val.length > 0) {
+          if (typeof val[0] === 'object') {
+            // eslint-disable-next-line no-plusplus
+            for (let i = 0; i < val.length; i++) {
+              /**
+               * TODO Primary 키값이 있어야 한다.
+               * ManyToMany에서 id 값이 문자열일 경우 오류가 발생한다.
+               */
+              const b = val[i].id
+
+              if (!isNaN(Number(b))) {
+                val[i] = { id: Number(b) }
+              } else {
+                val[i] = { id: b }
+              }
+            }
+          }
+        }
+        instance[paramName] = val
       })
       await this.validateAndSave(instance)
       return instance
@@ -205,6 +226,7 @@ export class Resource extends BaseResource {
     try {
       await instance.save()
     } catch (error) {
+      console.error("ERROR IN SAVE", error, instance)
       if (error.name === 'QueryFailedError') {
         throw new ValidationError({
           [error.column]: {
