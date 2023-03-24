@@ -101,7 +101,6 @@ export class Resource extends BaseResource {
     return instance
   }
 
-
   public async update(pk: string | number, params: any = {}): Promise<ParamsType> {
     const reference: any = {}
     reference[this.idName()] = pk
@@ -226,7 +225,8 @@ export class Resource extends BaseResource {
     try {
       await instance.save()
     } catch (error) {
-      console.error("ERROR IN SAVE", error, instance)
+      // eslint-disable-next-line no-console
+      console.error('ERROR IN SAVE', error, instance)
       if (error.name === 'QueryFailedError') {
         throw new ValidationError({
           [error.column]: {
